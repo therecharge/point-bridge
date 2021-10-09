@@ -4,6 +4,6 @@ var router = express.Router();
 var checksum = require("../src/utils/checksum");
 
 /* GET users listing. */
-router.get("/:id", checksum);
+router.get("/checksum/:id", checksum);
 
 module.exports = router;
