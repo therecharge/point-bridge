@@ -10,4 +10,4 @@ It is an incentive system that allows RCG tokens secured by partners to be distr
 This project was created through node.js+express.
 Search for the relevant tutorial and check it out.
 
-It is recommended to deploy using EB.
+It is recommended to deploy using AWS ElasticBeanstalk.
