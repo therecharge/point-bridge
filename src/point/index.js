@@ -5,6 +5,22 @@ require("dotenv").config();
 let sigUsed = {};
 let userPoint = {};
 
+function swap(req, res) {
+  const { address } = req.params;
+  const amount = userPoint[address] | 0;
+  userPoint[address] = 0;
+  res.send({
+    address: address,
+    amount: amount,
+  });
+}
+
+function getPoint(req, res) {
+  const { address } = req.params;
+  const balance = userPoint[address] | 0;
+  res.send({ address: address, balance: balance });
+}
+
 function point(req, res) {
   //   try {
   //   console.log(req.body);
@@ -31,6 +47,7 @@ function point(req, res) {
   }
 
   sigUsed[sig] = true;
+  userPoint[address] = (userPoint[address] | 0) + Number(amount);
   res.send(201, {
     result: "success",
     message: "It's done well!",
@@ -46,4 +63,4 @@ function point(req, res) {
 
 // console.log(point());
 
-module.exports = point;
+module.exports = { post: point, get: getPoint, swap: swap };
