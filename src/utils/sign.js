@@ -10,7 +10,7 @@ var crypto = require("crypto");
 function sign(plain, salt) {
   const hash = crypto.createHmac("sha256", salt).update(plain).digest("string");
   const signature = hash.toString("base64");
-  console.log(signature);
+  return signature;
 }
 
 module.exports = sign;
