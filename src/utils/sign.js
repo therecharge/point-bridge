@@ -13,4 +13,11 @@ function sign(plain, salt) {
   return signature;
 }
 
+console.log(
+  sign(
+    "0xc1912fEE45d61C87Cc5EA59DaE31190FFFFf232d|xoq|10|xoq|1634006614107",
+    "mock"
+  )
+);
+
 module.exports = sign;

@@ -31,7 +31,7 @@ function point(req, res) {
   // if sig doesn't match
   console.log(req.header("x-rcg-sig"));
   if (req.header("x-rcg-sig") != sig) {
-    res.send(429, {
+    res.send(403, {
       result: "error",
       message: "Signature doesn't match",
     });
@@ -39,7 +39,7 @@ function point(req, res) {
   }
   // if sig used
   if (sigUsed[sig]) {
-    res.send(403, {
+    res.send(429, {
       result: "error",
       message: "Duplicate processing",
     });
@@ -47,6 +47,7 @@ function point(req, res) {
   }
 
   sigUsed[sig] = true;
+
   userPoint[address] = (userPoint[address] | 0) + Number(amount);
   res.send(201, {
     result: "success",
