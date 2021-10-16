@@ -1,19 +1,11 @@
-let sign = require("../utils/sign");
+const sign = require("../utils/sign");
+const Web3 = require("web3");
+const ERC20_ABI = require("../../lib/abi/erc20.json");
 require("dotenv").config();
 
 // TEMP
 let sigUsed = {};
 let userPoint = {};
-
-function swap(req, res) {
-  const { address } = req.params;
-  const amount = userPoint[address] | 0;
-  userPoint[address] = 0;
-  res.send({
-    address: address,
-    amount: amount,
-  });
-}
 
 function getPoint(req, res) {
   const { address } = req.params;
@@ -64,4 +56,4 @@ function point(req, res) {
 
 // console.log(point());
 
-module.exports = { post: point, get: getPoint, swap: swap };
+module.exports = { post: point, get: getPoint };
