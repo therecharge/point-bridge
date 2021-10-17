@@ -1,19 +1,18 @@
 const sign = require("../utils/sign");
-const Web3 = require("web3");
-const ERC20_ABI = require("../../lib/abi/erc20.json");
+const {Point, Sig_used} = require("../../models");
 require("dotenv").config();
 
-// TEMP
-let sigUsed = {};
-let userPoint = {};
 
-function getPoint(req, res) {
+async function getPoint(req, res) {
   const { address } = req.params;
-  const balance = userPoint[address] | 0;
+  const data = await Point.findOne({
+    where: {id:address}
+  });
+  const balance = data.dataValues.point | 0;
   res.send({ address: address, balance: balance });
 }
 
-function point(req, res) {
+async function point(req, res) {
   //   try {
   //   console.log(req.body);
   const { address, amount, timestamp } = req.body;
@@ -29,8 +28,16 @@ function point(req, res) {
     });
     return;
   }
+
   // if sig used
-  if (sigUsed[sig]) {
+  
+  const [_, created] = await Sig_used.findOrCreate({
+    where: { id: sig },
+    defaults: {
+      used: true
+    }
+  });
+  if (!created) {
     res.send(429, {
       result: "error",
       message: "Duplicate processing",
@@ -38,9 +45,15 @@ function point(req, res) {
     return;
   }
 
-  sigUsed[sig] = true;
 
-  userPoint[address] = (userPoint[address] | 0) + Number(amount);
+  await Point.findOrCreate({
+    where: { id: address },
+    defaults: {
+      point: 0
+    }
+  });
+  await Point.increment({point: 50}, { where: { id: address } })
+
   res.send(201, {
     result: "success",
     message: "It's done well!",
