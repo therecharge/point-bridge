@@ -1,27 +1,18 @@
-let sign = require("../utils/sign");
+const sign = require("../utils/sign");
+const {Point, Sig_used} = require("../../models");
 require("dotenv").config();
 
-// TEMP
-let sigUsed = {};
-let userPoint = {};
 
-function swap(req, res) {
+async function getPoint(req, res) {
   const { address } = req.params;
-  const amount = userPoint[address] | 0;
-  userPoint[address] = 0;
-  res.send({
-    address: address,
-    amount: amount,
+  const data = await Point.findOne({
+    where: {id:address}
   });
-}
-
-function getPoint(req, res) {
-  const { address } = req.params;
-  const balance = userPoint[address] | 0;
+  const balance = data.dataValues.point | 0;
   res.send({ address: address, balance: balance });
 }
 
-function point(req, res) {
+async function point(req, res) {
   //   try {
   //   console.log(req.body);
   const { address, amount, timestamp } = req.body;
@@ -37,8 +28,16 @@ function point(req, res) {
     });
     return;
   }
+
   // if sig used
-  if (sigUsed[sig]) {
+  
+  const [_, created] = await Sig_used.findOrCreate({
+    where: { id: sig },
+    defaults: {
+      used: true
+    }
+  });
+  if (!created) {
     res.send(429, {
       result: "error",
       message: "Duplicate processing",
@@ -46,9 +45,15 @@ function point(req, res) {
     return;
   }
 
-  sigUsed[sig] = true;
 
-  userPoint[address] = (userPoint[address] | 0) + Number(amount);
+  await Point.findOrCreate({
+    where: { id: address },
+    defaults: {
+      point: 0
+    }
+  });
+  await Point.increment({point: 50}, { where: { id: address } })
+
   res.send(201, {
     result: "success",
     message: "It's done well!",
@@ -64,4 +69,4 @@ function point(req, res) {
 
 // console.log(point());
 
-module.exports = { post: point, get: getPoint, swap: swap };
+module.exports = { post: point, get: getPoint };
