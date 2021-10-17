@@ -4,12 +4,6 @@ const axios = require("axios");
 const {Point, Tx_list} = require("../../models");
 require("dotenv").config();
 
-// TEMP
-let TxList = {};
-let userPoint = {
-  "0x4BF95b3B13f64890566982C37Aa549618568d5C0": 10000,
-};
-
 async function getTx(req, res) {
   let ret = {};
   const TxList = await Tx_list.findAll({
