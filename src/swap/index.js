@@ -35,7 +35,7 @@ async function swap(req, res) {
   });
   const point = RES_point.dataValues.point | 0;
   const price = data.recharge.krw;
-  const amount = Math.floor(point / price);
+  const amount = web3.utils.toWei(point/price);
 
   // exception
   if (amount == 0) {
