@@ -1,6 +1,7 @@
 const Web3 = require("web3");
 const ERC20_ABI = require("../../lib/abi/erc20.json");
 const axios = require("axios");
+const {Point, Tx_list} = require("../../models");
 require("dotenv").config();
 
 // TEMP
@@ -9,8 +10,16 @@ let userPoint = {
   "0x4BF95b3B13f64890566982C37Aa549618568d5C0": 10000,
 };
 
-function getTx(req, res) {
-  res.send(TxList);
+async function getTx(req, res) {
+  let ret = {};
+  const TxList = await Tx_list.findAll({
+    order: [['createdAt',"DESC"]],
+    limit: 1000
+  });
+  TxList.map(p => {
+    ret[p.dataValues.id]=p.dataValues.confirms
+  })
+  res.send(ret);
 }
 
 async function swap(req, res) {
@@ -27,7 +36,10 @@ async function swap(req, res) {
     "https://api.coingecko.com/api/v3/simple/price?ids=recharge&vs_currencies=krw"
   );
   const { address } = req.params;
-  const point = userPoint[address] | 0;
+  const RES_point = await Point.findOne({
+    where: {id:address}
+  });
+  const point = RES_point.dataValues.point | 0;
   const price = data.recharge.krw;
   const amount = Math.floor(point / price);
 
@@ -49,10 +61,14 @@ async function swap(req, res) {
         "pending"
       ),
     })
-    .on("transactionHash", function (hash) {
-      TxList[hash] = -1;
-      console.log(TxList);
-      userPoint[address] = 0;
+    .on("transactionHash", async function (hash) {
+      await Tx_list.findOrCreate({
+        where: { id: hash },
+        defaults: {
+          confirms: -1
+        }
+      });
+      await Point.update({point: 0}, { where: { id: address } })
       res.send(201, {
         address: address,
         point: point,
@@ -60,9 +76,8 @@ async function swap(req, res) {
         hash: hash,
       });
     })
-    .on("confirmation", function (confirmationNumber, receipt) {
-      TxList[receipt.transactionHash] = confirmationNumber;
-      console.log("Con", TxList);
+    .on("confirmation", async function (confirmationNumber, receipt) {
+      await Tx_list.update({confirms: confirmationNumber}, { where: { id: receipt.transactionHash } })
     })
     .on("error", function (error, receipt) {
       console.log(error);
