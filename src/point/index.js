@@ -1,12 +1,11 @@
 const sign = require("../utils/sign");
-const {Point, Sig_used} = require("../../models");
+const { Point, Sig_used } = require("../../models");
 require("dotenv").config();
-
 
 async function getPoint(req, res) {
   const { address } = req.params;
   const data = await Point.findOne({
-    where: {id:address}
+    where: { id: address },
   });
   const balance = data.dataValues.point | 0;
   res.send({ address: address, balance: balance });
@@ -30,12 +29,12 @@ async function point(req, res) {
   }
 
   // if sig used
-  
+
   const [_, created] = await Sig_used.findOrCreate({
     where: { id: sig },
     defaults: {
-      used: true
-    }
+      used: true,
+    },
   });
   if (!created) {
     res.send(429, {
@@ -45,14 +44,13 @@ async function point(req, res) {
     return;
   }
 
-
   await Point.findOrCreate({
     where: { id: address },
     defaults: {
-      point: 0
-    }
+      point: 0,
+    },
   });
-  await Point.increment({point: 50}, { where: { id: address } })
+  await Point.increment({ point: amount }, { where: { id: address } });
 
   res.send(201, {
     result: "success",
